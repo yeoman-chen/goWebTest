@@ -45,8 +45,8 @@ func init() {
 }
 
 func main() {
-	stop_chan := make(chan os.Signal) // 接收系统中断信号
-	signal.Notify(stop_chan, os.Interrupt)
+	stopChan := make(chan os.Signal) // 接收系统中断信号
+	signal.Notify(stopChan, os.Interrupt)
 	stopNum := 0
 	slaveNum := 0
 	// 监听端口
@@ -56,7 +56,7 @@ func main() {
 	}
 	//defer listen.Close()
 	buf := make([]byte, 128)
-	fmt.Println("Running...\n")
+	fmt.Println("Start Running...\n")
 	// 每2秒显示运行状态
 	go func() {
 		for range time.Tick(2 * time.Second) {
@@ -65,8 +65,7 @@ func main() {
 	}()
 	// 检测slave 断开的状态
 	go func() {
-		<-stop_chan
-		//Warn("Get Stop Command. Now Stoping...")
+		<-stopChan
 		stopNum++
 		if stopNum >= slaveNum {
 			if err = listen.Close(); err != nil {
@@ -78,25 +77,22 @@ func main() {
 
 	// 获取客户端数据
 	for i := 0; i < slaveCount; i++ {
-		fmt.Println("6666=====")
 		conn, err := listen.Accept()
-		fmt.Println("8888=====")
 		if err != nil {
-			fmt.Println("Accept error")
 			log.Println(err)
 			continue
 		}
-		//defer conn.Close()
 		n, err := conn.Read(buf)
 		tempC := slave{conn: conn, UserId: conn.RemoteAddr().String(), Url: string(buf[:n])}
 		wg.Add(1)
 		go tempC.run()
 		slaves = append(slaves, &tempC)
 		slaveNum++
-		fmt.Println("=====" + strconv.Itoa(slaveNum))
 	}
 	wg.Wait() // 等待是否有未处理完socket处理
 	time.Sleep(2 * time.Second)
+
+	fmt.Println("End Running...\n")
 }
 
 // 接收从服务器发来数据
@@ -110,7 +106,7 @@ func (s *slave) run() {
 		n, err := s.conn.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				fmt.Printf("client %s is close!\n", s.conn.RemoteAddr().String())
+				fmt.Printf("client %s is close!\n\n", s.conn.RemoteAddr().String())
 			}
 			//在这里直接退出goroutine，关闭由defer操作完成
 			return

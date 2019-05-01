@@ -84,7 +84,7 @@ func main() {
 	// 执行请求
 	testRequest()
 	// 告诉主服务器断开
-	sendToMaster(mt, map[string]interface{}{
+	/*sendToMaster(mt, map[string]interface{}{
 		"NetStatus":  "close",
 		"Url":        Url,        // Url
 		"SBCNum":     SBCNum,     // 并发连接数
@@ -93,7 +93,7 @@ func main() {
 		"SecNum":     SecNum,     // 时间
 		"SuccessNum": SuccessNum, // 成功次数
 		"FailNum":    FailNum,    // 失败次数
-	})
+	})*/
 
 	time.Sleep(1 * time.Second)
 }
@@ -130,7 +130,7 @@ func testRequest() {
 	}
 	<-c // 阻塞
 	fmt.Println("Finish")
-	os.Exit(0)
+	//os.Exit(0)
 }
 
 // 发送数据到主服务器
